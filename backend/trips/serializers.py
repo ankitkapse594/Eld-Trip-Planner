@@ -56,6 +56,9 @@ class TripPlanRequestSerializer(serializers.Serializer):
     shipping_doc_no = serializers.CharField(
         required=False, allow_blank=True, default="BOL-8829104"
     )
+    offline = serializers.BooleanField(
+        required=False, default=False, help_text="Run offline without external reverse-geocoding."
+    )
 
     def validate_start_datetime(self, value):
         if value is None:

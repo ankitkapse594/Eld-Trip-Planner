@@ -8,6 +8,7 @@ import logging
 from typing import Dict, Any, List, Tuple
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from .geo_utils import haversine_distance_miles, compute_cumulative_distances, simplify_geometry
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,16 @@ def get_route(
             ]
         }
     """
+    cache_key = (
+        f"route:{round(float(origin['lat']), 3)},{round(float(origin['lng']), 3)}:"
+        f"{round(float(pickup['lat']), 3)},{round(float(pickup['lng']), 3)}:"
+        f"{round(float(dropoff['lat']), 3)},{round(float(dropoff['lng']), 3)}:"
+        f"{round(float(avg_speed_mph), 1)}"
+    )
+    cached_route = cache.get(cache_key)
+    if cached_route is not None:
+        return cached_route
+
     coords_lon_lat = [
         [float(origin["lng"]), float(origin["lat"])],
         [float(pickup["lng"]), float(pickup["lat"])],
@@ -83,7 +94,7 @@ def get_route(
                         leg2_mi = round(total_meters * METERS_TO_MILES - leg1_mi, 2)
 
                     total_mi = round(leg1_mi + leg2_mi, 2)
-                    return {
+                    result = {
                         "geometry": simplify_geometry(route_lat_lng, max_points=600),
                         "total_distance_miles": total_mi,
                         "pickup_distance_miles": leg1_mi,
@@ -102,6 +113,8 @@ def get_route(
                             },
                         ],
                     }
+                    cache.set(cache_key, result, timeout=86400)
+                    return result
         except Exception as exc:
             logger.warning(f"ORS routing failed: {exc}. Attempting OSRM fallback.")
 
@@ -129,7 +142,7 @@ def get_route(
                     leg2_mi = round(total_m * METERS_TO_MILES - leg1_mi, 2)
 
                 total_mi = round(leg1_mi + leg2_mi, 2)
-                return {
+                result = {
                     "geometry": simplify_geometry(route_lat_lng, max_points=600),
                     "total_distance_miles": total_mi,
                     "pickup_distance_miles": leg1_mi,
@@ -148,6 +161,8 @@ def get_route(
                         },
                     ],
                 }
+                cache.set(cache_key, result, timeout=86400)
+                return result
     except Exception as exc:
         logger.error(f"OSRM routing failed: {exc}")
 

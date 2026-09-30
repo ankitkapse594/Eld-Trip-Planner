@@ -13,7 +13,7 @@ from django.conf import settings
 from .serializers import TripPlanRequestSerializer, GeocodeQuerySerializer
 from .services.routing import get_route, RoutingProviderError
 from .services.geo_utils import compute_cumulative_distances, interpolate_coord_at_mile
-from .services.geocoding import search_locations, reverse_geocode
+from .services.geocoding import search_locations, reverse_geocode, batch_reverse_geocode
 from .services.hos_planner import (
     plan_trip,
     STATUS_DRIVING,
@@ -173,6 +173,25 @@ class TripPlanView(APIView):
                 })
                 stop_id += 1
 
+        # Reverse-geocode stop locations in a thread pool with caching and safe fallback
+        offline_mode = data.get("offline", False)
+        intermediate_stops = [
+            st for st in stops if st["type"] not in ("origin", "pickup", "dropoff")
+        ]
+        if intermediate_stops:
+            if offline_mode:
+                for st in intermediate_stops:
+                    st["location"]["label"] = f"Mile {st['mile_marker']:.0f}, Highway Rest/Fuel"
+            else:
+                stop_coords = [
+                    (float(st["location"]["lat"]), float(st["location"]["lng"]))
+                    for st in intermediate_stops
+                ]
+                geocoded_stop_labels = batch_reverse_geocode(stop_coords, max_workers=5)
+                for st, lbl in zip(intermediate_stops, geocoded_stop_labels):
+                    if lbl:
+                        st["location"]["label"] = lbl
+
         # 5. Build Daily Log Sheets
         header_info = {
             "carrier_name": data.get("carrier_name") or "Antigravity Freight Lines",
@@ -193,15 +212,19 @@ class TripPlanView(APIView):
             route_cumulative_miles=cum_miles,
             cycle_used_at_start=cycle_used,
             header_info=header_info,
+            offline=offline_mode,
         )
 
-        # Enrich stop locations with nearest remark labels if available
+        # Enrich stop locations with nearest remark labels if not already named
         for st in stops:
-            for log in daily_logs:
-                for rem in log.get("remarks", []):
-                    if rem["time"] == st["arrive"][11:16]:
-                        st["location"]["label"] = rem["location"]
-                        break
+            lbl = st["location"].get("label", "")
+            # If label is just raw coordinates like "38.123, -89.456", try to get a better label from remarks
+            if not lbl or ("," in lbl and lbl.replace(".", "").replace(",", "").replace("-", "").replace(" ", "").isdigit()):
+                for log in daily_logs:
+                    for rem in log.get("remarks", []):
+                        if rem["time"] == st["arrive"][11:16] and rem.get("location"):
+                            st["location"]["label"] = rem["location"]
+                            break
 
         # 6. Overall Metrics Summary
         total_driving_min = sum(s.duration_minutes for s in segments if s.status == STATUS_DRIVING)
