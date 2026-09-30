@@ -109,6 +109,30 @@ export const RouteMap: React.FC<RouteMapProps> = ({
   const selectedStop = stops.find((s) => s.id === selectedStopId) || null;
   const defaultCenter: [number, number] = [39.8283, -98.5795]; // Center of USA
 
+  // Split route geometry into Leg 1 (Origin -> Pickup) and Leg 2 (Pickup -> Dropoff)
+  const pickupStop = stops.find((s) => s.type === "pickup");
+  let leg1Geometry: [number, number][] = [];
+  let leg2Geometry: [number, number][] = [];
+
+  if (route && route.geometry.length > 0) {
+    if (pickupStop && route.geometry.length > 2) {
+      let minDist = Infinity;
+      let splitIdx = 0;
+      route.geometry.forEach((pt, idx) => {
+        const d = Math.hypot(pt[0] - pickupStop.location.lat, pt[1] - pickupStop.location.lng);
+        if (d < minDist) {
+          minDist = d;
+          splitIdx = idx;
+        }
+      });
+      // Ensure overlap at splitIdx for seamless continuous line
+      leg1Geometry = route.geometry.slice(0, splitIdx + 1);
+      leg2Geometry = route.geometry.slice(splitIdx);
+    } else {
+      leg1Geometry = route.geometry;
+    }
+  }
+
   return (
     <div className="w-full h-full min-h-[380px] lg:min-h-[500px] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative">
       <MapContainer
@@ -125,25 +149,52 @@ export const RouteMap: React.FC<RouteMapProps> = ({
 
         {route && <MapController geometry={route.geometry} selectedStop={selectedStop} />}
 
-        {/* Route Polyline: Main Corridor */}
-        {route && route.geometry.length > 0 && (
+        {/* Two-Color Route Polyline: Leg 1 (Sky Blue) & Leg 2 (Emerald) */}
+        {leg1Geometry.length > 0 && (
           <>
-            {/* Glow / Outline */}
+            {/* Leg 1 Glow */}
             <Polyline
-              positions={route.geometry}
+              positions={leg1Geometry}
               pathOptions={{
-                color: "#F5A524",
+                color: "#38BDF8", // Sky blue
                 weight: 6,
                 opacity: 0.35,
                 lineCap: "round",
                 lineJoin: "round",
               }}
             />
-            {/* Core Route Line */}
+            {/* Leg 1 Core */}
             <Polyline
-              positions={route.geometry}
+              positions={leg1Geometry}
               pathOptions={{
-                color: "#F5A524",
+                color: "#38BDF8",
+                weight: 3.5,
+                opacity: 0.95,
+                lineCap: "round",
+                lineJoin: "round",
+              }}
+            />
+          </>
+        )}
+
+        {leg2Geometry.length > 0 && (
+          <>
+            {/* Leg 2 Glow */}
+            <Polyline
+              positions={leg2Geometry}
+              pathOptions={{
+                color: "#10B981", // Emerald green
+                weight: 6,
+                opacity: 0.35,
+                lineCap: "round",
+                lineJoin: "round",
+              }}
+            />
+            {/* Leg 2 Core */}
+            <Polyline
+              positions={leg2Geometry}
+              pathOptions={{
+                color: "#10B981",
                 weight: 3.5,
                 opacity: 0.95,
                 lineCap: "round",
@@ -192,7 +243,14 @@ export const RouteMap: React.FC<RouteMapProps> = ({
       </MapContainer>
 
       {/* Map Legend Overlay */}
-      <div className="no-print absolute bottom-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-2 text-[10px] text-slate-300 shadow-xl hidden sm:flex items-center gap-3">
+      <div className="no-print absolute bottom-4 left-4 z-[400] bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-2 text-[10px] text-slate-300 shadow-xl hidden sm:flex items-center gap-3 flex-wrap">
+        <span className="flex items-center gap-1 font-medium text-sky-400">
+          <span className="w-3 h-1 rounded bg-sky-400 inline-block"></span> Leg 1 (To Pickup)
+        </span>
+        <span className="flex items-center gap-1 font-medium text-emerald-400">
+          <span className="w-3 h-1 rounded bg-emerald-500 inline-block"></span> Leg 2 (Loaded)
+        </span>
+        <span className="text-slate-600">|</span>
         <span className="flex items-center gap-1">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Origin
         </span>
