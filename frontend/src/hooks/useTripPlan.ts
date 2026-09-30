@@ -1,26 +1,21 @@
-import { useState } from "react";
-import { planTrip } from "../api/client";
+import { useMutation } from "@tanstack/react-query";
+import { planTrip, ApiError } from "../api/client";
 import type { TripPlanRequest, TripPlanResponse } from "../types/trip";
 
+/**
+ * TanStack Query Mutation hook for executing FMCSA trip planning requests.
+ * Manages pending states, errors, and cached trip responses.
+ */
+export function useTripPlanMutation() {
+  return useMutation<TripPlanResponse, ApiError, TripPlanRequest>({
+    mutationKey: ["trip-plan"],
+    mutationFn: (request: TripPlanRequest) => planTrip(request),
+  });
+}
+
+/**
+ * Convenience alias hook
+ */
 export function useTripPlan() {
-  const [data, setData] = useState<TripPlanResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const execute = async (request: TripPlanRequest) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await planTrip(request);
-      setData(result);
-      return result;
-    } catch (err: any) {
-      setError(err.message || "Failed to plan trip");
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { data, isLoading, error, execute, setData };
+  return useTripPlanMutation();
 }

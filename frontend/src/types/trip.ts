@@ -124,4 +124,11 @@ export interface TripPlanRequest {
   co_driver?: string;
   shipper_commodity?: string;
   shipping_doc_no?: string;
+  offline?: boolean;
+}
+
+export interface GeocodeResult {
+  label: string;
+  lat: number;
+  lng: number;
 }

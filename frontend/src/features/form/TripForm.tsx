@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Sparkles, Calendar, ChevronDown, ChevronUp, Navigation, Sliders } from "lucide-react";
+import { Sparkles, ChevronDown, ChevronUp, Navigation, Sliders } from "lucide-react";
 import type { LocationPoint, TripPlanRequest } from "../../types/trip";
 import { LocationInput } from "./LocationInput";
+import { StartTimePicker } from "./StartTimePicker";
 
 interface TripFormProps {
   onSubmit: (data: TripPlanRequest) => void;
@@ -195,21 +196,13 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading }) => {
           </div>
         </div>
 
-        <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-          <label htmlFor="start-datetime" className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-teal-400" />
-            Home Terminal Departure
-          </label>
-          <input
-            id="start-datetime"
-            type="datetime-local"
-            step="900"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono"
-          />
-          <p className="text-[10px] text-slate-500 mt-1">15-minute rounded local terminal time</p>
-        </div>
+        <StartTimePicker
+          id="start-datetime"
+          value={startTime}
+          onChange={setStartTime}
+          error={errors.start_time}
+          disabled={isLoading}
+        />
       </div>
 
       {/* Collapsible Details */}

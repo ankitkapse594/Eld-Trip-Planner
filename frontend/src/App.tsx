@@ -10,37 +10,37 @@ import { AssumptionsPanel } from "./components/AssumptionsPanel";
 import { ErrorBanner } from "./components/ErrorBanner";
 import { LoadingState } from "./components/LoadingState";
 import { EmptyState } from "./components/EmptyState";
-import { planTrip } from "./api/client";
-import type { TripPlanRequest, TripPlanResponse } from "./types/trip";
+import { DebugJsonPanel } from "./components/DebugJsonPanel";
+import { useTripPlanMutation } from "./hooks/useTripPlan";
+import type { TripPlanRequest } from "./types/trip";
 import { Map, FileText } from "lucide-react";
 
 export const App: React.FC = () => {
-  const [planResult, setPlanResult] = useState<TripPlanResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<Record<string, any> | undefined>(undefined);
+  const [lastRequest, setLastRequest] = useState<TripPlanRequest | null>(null);
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"timeline" | "logs">("timeline");
   const [initialCycleUsed, setInitialCycleUsed] = useState<number>(32.5);
 
-  const handlePlanTrip = async (req: TripPlanRequest) => {
-    setIsLoading(true);
-    setErrorMsg(null);
-    setErrorDetails(undefined);
+  // TanStack Query Mutation
+  const {
+    mutate: planTripMutate,
+    isPending: isLoading,
+    error: apiError,
+    data: planResult,
+    reset: resetMutation,
+  } = useTripPlanMutation();
+
+  const handlePlanTrip = (req: TripPlanRequest) => {
+    setLastRequest(req);
     setInitialCycleUsed(req.cycle_used_hours);
 
-    try {
-      const response = await planTrip(req);
-      setPlanResult(response);
-      if (response.stops.length > 0) {
-        setSelectedStopId(response.stops[0].id);
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred while planning your trip.");
-      setErrorDetails(err.details);
-    } finally {
-      setIsLoading(false);
-    }
+    planTripMutate(req, {
+      onSuccess: (response) => {
+        if (response.stops.length > 0) {
+          setSelectedStopId(response.stops[0].id);
+        }
+      },
+    });
   };
 
   const handleFillExample = () => {
@@ -58,11 +58,11 @@ export const App: React.FC = () => {
 
       <main className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Error notification if any */}
-        {errorMsg && (
+        {apiError && (
           <ErrorBanner
-            message={errorMsg}
-            details={errorDetails}
-            onDismiss={() => setErrorMsg(null)}
+            message={apiError.message || "An error occurred while generating your trip plan."}
+            details={apiError.details}
+            onDismiss={() => resetMutation()}
           />
         )}
 
@@ -216,6 +216,9 @@ export const App: React.FC = () => {
             ]}
           />
         )}
+
+        {/* Dev-only Raw JSON Debug Panel */}
+        <DebugJsonPanel request={lastRequest} response={planResult ?? null} />
       </main>
 
       {/* Footer */}
