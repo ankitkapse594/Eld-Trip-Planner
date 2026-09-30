@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import type { RouteData, TripStop } from "../../types/trip";
 
 interface RouteMapProps {
@@ -18,12 +19,19 @@ const MapController: React.FC<{
   const map = useMap();
   const prevGeometryRef = useRef<[number, number][] | null>(null);
 
+  // Invalidate size on mount and geometry change to handle grid layout
+  useEffect(() => {
+    map.invalidateSize();
+    const timer = setTimeout(() => map.invalidateSize(), 300);
+    return () => clearTimeout(timer);
+  }, [map, geometry]);
+
   // Fit bounds when route geometry changes
   useEffect(() => {
     if (geometry && geometry.length > 0 && geometry !== prevGeometryRef.current) {
       prevGeometryRef.current = geometry;
       const bounds = L.latLngBounds(geometry.map((pt) => [pt[0], pt[1]]));
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
     }
   }, [geometry, map]);
 
@@ -140,10 +148,11 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         zoom={4}
         scrollWheelZoom={true}
         className="w-full h-full"
+        style={{ height: "100%", minHeight: "480px", width: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
         />
 
