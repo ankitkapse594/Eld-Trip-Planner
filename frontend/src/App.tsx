@@ -50,13 +50,21 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+      {/* Skip to Main Content Link for Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-2xl focus:outline-none focus:ring-2 focus:ring-amber-400"
+      >
+        Skip to main content
+      </a>
+
       {/* Top Navigation */}
       <Header
         hosValid={planResult?.summary.hos_valid}
         totalMiles={planResult?.summary.total_miles}
       />
 
-      <main className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <main id="main-content" className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Error notification if any */}
         {apiError && (
           <ErrorBanner
@@ -112,11 +120,14 @@ export const App: React.FC = () => {
         {/* Bottom Full-Width Tabbed Section: [Route & Stops Timeline] [Daily Log Sheets] */}
         {planResult && (
           <div className="mt-8 space-y-4">
-            <div className="no-print border-b border-slate-800 flex items-center gap-3">
+            <div className="no-print border-b border-slate-800 flex items-center gap-3 overflow-x-auto" role="tablist" aria-label="Trip views">
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === "timeline"}
+                aria-controls="panel-timeline"
                 onClick={() => setActiveTab("timeline")}
-                className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition ${
+                className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition focus-ring rounded-t-lg ${
                   activeTab === "timeline"
                     ? "border-amber-500 text-amber-400"
                     : "border-transparent text-slate-400 hover:text-slate-200"
@@ -131,8 +142,11 @@ export const App: React.FC = () => {
 
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === "logs"}
+                aria-controls="panel-logs"
                 onClick={() => setActiveTab("logs")}
-                className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition ${
+                className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition focus-ring rounded-t-lg ${
                   activeTab === "logs"
                     ? "border-amber-500 text-amber-400"
                     : "border-transparent text-slate-400 hover:text-slate-200"

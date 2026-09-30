@@ -49,14 +49,27 @@
   background: #0f172a !important;
 }
 
+/* Focus ring utility */
+@layer utilities {
+  .focus-ring {
+    outline: none !important;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid #F59E0B !important;
+    outline-offset: 2px !important;
+  }
+}
+
 /* Print CSS: Clean 1-sheet per page letter landscape */
 @media print {
   body {
     background: white !important;
     color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
-  .no-print {
+  .no-print, header, footer, nav, aside {
     display: none !important;
   }
   
@@ -67,15 +80,16 @@
   .log-sheet-container {
     page-break-after: always;
     page-break-inside: avoid;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     box-shadow: none !important;
     width: 100% !important;
     max-width: 100% !important;
+    border: none !important;
   }
 
   @page {
     size: letter landscape;
-    margin: 0.4in;
+    margin: 0.25in;
   }
 }

@@ -65,15 +65,18 @@ export const LogSheetViewer: React.FC<LogSheetViewerProps> = ({ logs }) => {
     <div className="space-y-4">
       {/* Day Selector Navigation Tabs */}
       <div className="no-print flex items-center justify-between bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-lg">
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-[70%]">
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-[70%]" role="tablist" aria-label="Daily log sheets">
           {logs.map((log, idx) => {
             const isActive = idx === activeDayIndex;
             return (
               <button
                 key={log.date}
                 type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-label={`View Daily Log Day ${idx + 1}`}
                 onClick={() => setActiveDayIndex(idx)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 border focus-ring ${
                   isActive
                     ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-bold"
                     : "bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white"

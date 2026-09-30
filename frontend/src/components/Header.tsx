@@ -22,8 +22,11 @@ export const Header: React.FC<HeaderProps> = ({ hosValid, totalMiles }) => {
               </span>
             </h1>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-400 hidden sm:block">
             Commercial Property Carrier HOS Route Dispatch &amp; Paper Log Sheet Generator
+          </p>
+          <p className="text-[11px] text-slate-400 sm:hidden">
+            HOS Route Dispatch &amp; Log Generator
           </p>
         </div>
       </div>

@@ -13,7 +13,9 @@ export const AssumptionsPanel: React.FC<AssumptionsPanelProps> = ({ assumptions 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-left text-xs font-semibold text-slate-300 hover:text-white transition"
+        aria-expanded={isOpen}
+        aria-controls="assumptions-content"
+        className="w-full flex items-center justify-between text-left text-xs font-semibold text-slate-300 hover:text-white transition rounded-lg p-1 -m-1 focus-ring"
       >
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-amber-500" />
@@ -26,7 +28,7 @@ export const AssumptionsPanel: React.FC<AssumptionsPanelProps> = ({ assumptions 
       </button>
 
       {isOpen && (
-        <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-400">
+        <div id="assumptions-content" className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-400">
           {assumptions.map((rule, idx) => (
             <div key={idx} className="flex items-start gap-2 bg-slate-950/40 p-2 rounded-xl border border-slate-800/60">
               <CheckCircle2 className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
