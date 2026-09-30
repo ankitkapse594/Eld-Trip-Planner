@@ -110,3 +110,31 @@ def simplify_geometry(coords: List[List[float]], max_points: int = 400) -> List[
             simplified.append(coords[idx])
     simplified.append(coords[-1])
     return simplified
+
+
+def create_stub_route(
+    total_miles: float,
+    start_lat: float = 41.8781,
+    start_lng: float = -87.6298,
+    end_lat: float = 33.7490,
+    end_lng: float = -84.3880,
+    num_points: int = 100,
+) -> Tuple[List[List[float]], List[float]]:
+    """
+    Creates a synthetic straight-line stub route with cumulative mileage and coordinates.
+    Zero network dependencies.
+    """
+    if num_points < 2:
+        num_points = 2
+    coords: List[List[float]] = []
+    cumulative_miles: List[float] = []
+
+    for i in range(num_points):
+        frac = i / (num_points - 1)
+        lat = round(start_lat + frac * (end_lat - start_lat), 5)
+        lng = round(start_lng + frac * (end_lng - start_lng), 5)
+        coords.append([lat, lng])
+        cumulative_miles.append(round(frac * total_miles, 2))
+
+    return coords, cumulative_miles
+

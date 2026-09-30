@@ -106,6 +106,8 @@ def build_daily_logs(
     route_cumulative_miles: List[float],
     cycle_used_at_start: float,
     header_info: Dict[str, Any],
+    reverse_geocoder: Any = None,
+    offline: bool = False,
 ) -> List[Dict[str, Any]]:
     """
     Builds the complete daily log sheets for the trip.
@@ -258,8 +260,13 @@ def build_daily_logs(
             },
         })
 
-    # Batch reverse-geocode all collected remark coordinates
-    geocoded_labels = batch_reverse_geocode(points_to_geocode)
+    # Batch reverse-geocode all collected remark coordinates (or generate stub labels if offline)
+    if offline:
+        geocoded_labels = [f"Mile {ch['mile']:.0f}, Hwy" for changes in day_status_changes for ch in changes]
+    elif reverse_geocoder is not None:
+        geocoded_labels = reverse_geocoder(points_to_geocode)
+    else:
+        geocoded_labels = batch_reverse_geocode(points_to_geocode)
 
     label_idx = 0
     for day_idx, log in enumerate(daily_logs):
