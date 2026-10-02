@@ -11,6 +11,7 @@ interface LocationInputProps {
   onChange: (point: LocationPoint | null) => void;
   error?: string;
   required?: boolean;
+  pinColor?: string;
 }
 
 export const LocationInput: React.FC<LocationInputProps> = ({
@@ -21,6 +22,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   onChange,
   error,
   required = true,
+  pinColor = "text-slate-400 dark:text-slate-500",
 }) => {
   const [query, setQuery] = useState(value ? value.label : "");
   const [suggestions, setSuggestions] = useState<LocationPoint[]>([]);
@@ -107,19 +109,21 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <label htmlFor={id} className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
-        <span>{label} {required && <span className="text-amber-500">*</span>}</span>
+    <div className="space-y-1.5" ref={dropdownRef}>
+      <div className="flex items-center justify-between">
+        <label htmlFor={id} className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          {label} {required && <span className="text-blue-500">*</span>}
+        </label>
         {value && (
-          <span className="text-[10px] font-mono text-teal-400">
+          <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
             {value.lat.toFixed(2)}, {value.lng.toFixed(2)}
           </span>
         )}
-      </label>
+      </div>
 
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-          <MapPin className="w-4 h-4 text-amber-500/80" />
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <MapPin className={`w-4 h-4 ${pinColor}`} />
         </div>
 
         <input
@@ -129,66 +133,66 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           onChange={(e) => {
             setQuery(e.target.value);
             if (value && e.target.value !== value.label) {
-              onChange(null); // Clear selected point until picked
+              onChange(null);
             }
           }}
           onFocus={() => {
             if (suggestions.length > 0) setIsOpen(true);
           }}
           placeholder={placeholder}
-          aria-label={label}
           autoComplete="off"
-          className={`w-full pl-9 pr-10 py-2.5 bg-slate-900 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
+          className={`w-full bg-white dark:bg-slate-900 border rounded-xl pl-9 pr-9 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
             error
-              ? "border-red-500/70 focus:ring-red-500/30"
+              ? "border-red-400 dark:border-red-500/80 focus:border-red-500"
               : value
-              ? "border-teal-500/40 focus:border-teal-500"
-              : "border-slate-800 focus:border-amber-500"
+              ? "border-slate-300 dark:border-slate-700 focus:border-blue-500"
+              : "border-slate-200 dark:border-slate-800 focus:border-blue-500"
           }`}
         />
 
         <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-1">
-          {isLoading && <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />}
-          {!isLoading && query && (
+          {isLoading ? (
+            <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+          ) : query ? (
             <button
               type="button"
               onClick={handleClear}
-              className="p-1 text-slate-400 hover:text-slate-200 rounded-lg hover:bg-slate-800 transition"
-              aria-label={`Clear ${label}`}
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md transition"
+              title="Clear location"
             >
               <X className="w-3.5 h-3.5" />
             </button>
+          ) : (
+            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
           )}
         </div>
+
+        {/* Autocomplete Dropdown */}
+        {isOpen && suggestions.length > 0 && (
+          <div className="absolute z-50 w-full mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg overflow-hidden py-1 max-h-56 overflow-y-auto">
+            {suggestions.map((pt, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleSelect(pt)}
+                className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/50 last:border-b-0 text-xs"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="text-slate-800 dark:text-slate-200 font-medium truncate">
+                    {pt.label}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                  {pt.lat.toFixed(2)}, {pt.lng.toFixed(2)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {error && <p className="mt-1 text-xs text-red-400 font-medium">{error}</p>}
-
-      {/* Autocomplete Dropdown */}
-      {isOpen && suggestions.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
-          <div className="px-3 py-1.5 bg-slate-800/50 border-b border-slate-800 text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>Select Matching Waypoint</span>
-            <Search className="w-3 h-3 text-slate-400" />
-          </div>
-          {suggestions.map((pt, idx) => (
-            <button
-              key={`${pt.label}-${idx}`}
-              type="button"
-              onClick={() => handleSelect(pt)}
-              className="w-full text-left px-3.5 py-2.5 text-xs text-slate-200 hover:bg-amber-500/10 hover:text-amber-200 border-b border-slate-800/50 last:border-b-0 flex items-start gap-2.5 transition"
-            >
-              <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="font-medium truncate text-slate-100">{pt.label}</p>
-                <p className="text-[10px] font-mono text-slate-400">
-                  {pt.lat.toFixed(4)}, {pt.lng.toFixed(4)}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
+      {error && <p className="text-[11px] text-red-500 dark:text-red-400 font-medium">{error}</p>}
     </div>
   );
 };

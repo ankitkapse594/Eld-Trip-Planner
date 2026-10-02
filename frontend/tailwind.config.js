@@ -15,21 +15,23 @@ export default {
         eld: {
           off: "#64748B",      // Slate
           sb: "#6366F1",       // Indigo
-          driving: "#F5A524",  // Amber
-          onduty: "#14B8A6",   // Teal
+          driving: "#F59E0B",  // Amber
+          onduty: "#10B981",   // Emerald
           ink: "#1d4ed8",      // Royal Blue ink for paper log
           paper: "#fcfbf7",    // Authentic paper off-white
         }
       },
       fontFamily: {
-        sans: ['"Space Grotesk"', "system-ui", "-apple-system", "sans-serif"],
+        sans: ['"Inter"', "system-ui", "-apple-system", "sans-serif"],
+        display: ['"Space Grotesk"', '"Inter"', "system-ui", "sans-serif"],
         mono: ['"JetBrains Mono"', "monospace"],
         handwriting: ['"Caveat"', "cursive"],
       },
       boxShadow: {
-        'glow-amber': '0 0 20px -5px rgba(245, 165, 36, 0.3)',
-        'glow-teal': '0 0 20px -5px rgba(20, 184, 166, 0.3)',
-        'paper': '0 4px 25px -3px rgba(0, 0, 0, 0.5), 0 2px 10px -2px rgba(0, 0, 0, 0.3)',
+        'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04)',
+        'paper': '0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.04)',
       }
     },
   },

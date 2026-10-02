@@ -1,6 +1,15 @@
 import type { TripPlanRequest, TripPlanResponse, LocationPoint } from "../types/trip";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+// In dev mode with no env var, default to http://localhost:8000.
+// In production with no env var (or empty string), default to "" (relative same-origin).
+// If an explicit VITE_API_BASE_URL is provided, use it (stripping any trailing slash).
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL =
+  typeof rawApiBaseUrl === "string" && rawApiBaseUrl.trim() !== ""
+    ? rawApiBaseUrl.trim().replace(/\/+$/, "")
+    : import.meta.env.DEV
+    ? "http://localhost:8000"
+    : "";
 
 export class ApiError extends Error {
   status: number;

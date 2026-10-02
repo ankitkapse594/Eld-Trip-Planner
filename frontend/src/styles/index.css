@@ -3,49 +3,80 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 }
 
-/* Custom smooth dark scrollbar */
+/* Clean, modern scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B1220;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
   background: #334155;
 }
 
-/* Leaflet dark theme adjustments */
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Leaflet clean map styles */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #0B1220 !important;
+  background: #f1f5f9 !important;
   font-family: inherit;
+  z-index: 10;
 }
 
+.dark .leaflet-container {
+  background: #0f172a !important;
+}
+
+/* Natural, crisp map tiles */
 .leaflet-tile-pane {
-  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  filter: none;
+}
+
+/* Gentle subtle tone in dark mode without destroying legibility */
+.dark .leaflet-tile-pane {
+  filter: brightness(0.85) contrast(1.05);
 }
 
 .leaflet-popup-content-wrapper {
-  background: #0f172a !important;
-  color: #f1f5f9 !important;
-  border: 1px solid #334155 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+  padding: 4px !important;
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
 }
 
 .leaflet-popup-tip {
+  background: #ffffff !important;
+}
+
+.dark .leaflet-popup-tip {
   background: #0f172a !important;
 }
 
@@ -55,8 +86,11 @@
     outline: none !important;
   }
   .focus-ring:focus-visible {
-    outline: 2px solid #F59E0B !important;
+    outline: 2px solid #3b82f6 !important;
     outline-offset: 2px !important;
+  }
+  .dark .focus-ring:focus-visible {
+    outline: 2px solid #60a5fa !important;
   }
 }
 

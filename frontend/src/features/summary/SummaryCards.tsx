@@ -1,5 +1,5 @@
 import React from "react";
-import { Milestone, Clock, Calendar, Fuel, AlertTriangle } from "lucide-react";
+import { Route, Clock, Calendar, Fuel, AlertTriangle } from "lucide-react";
 import type { TripSummary } from "../../types/trip";
 
 interface SummaryCardsProps {
@@ -11,74 +11,78 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ summary }) => {
     <div className="space-y-3">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Total Distance */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3.5 shadow-card transition-colors">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
             <span className="text-xs font-medium">Total Distance</span>
-            <Milestone className="w-4 h-4 text-amber-500" />
+            <Route className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <div className="text-xl font-bold font-mono text-white">
+          <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
             {summary.total_miles.toLocaleString()}{" "}
-            <span className="text-xs font-sans text-slate-400 font-normal">mi</span>
+            <span className="text-xs font-sans text-slate-500 font-normal">mi</span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-1">Total route distance</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Commercial highway route</p>
         </div>
 
         {/* Driving Hours */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3.5 shadow-card transition-colors">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
             <span className="text-xs font-medium">Driving Time</span>
-            <Clock className="w-4 h-4 text-teal-400" />
+            <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-xl font-bold font-mono text-white">
+          <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
             {summary.driving_hours.toFixed(1)}{" "}
-            <span className="text-xs font-sans text-slate-400 font-normal">hrs</span>
+            <span className="text-xs font-sans text-slate-500 font-normal">hrs</span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-1">CMV on-road driving</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">At 55 mph highway avg</p>
         </div>
 
-        {/* Trip Duration */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-medium">Trip Duration</span>
-            <Calendar className="w-4 h-4 text-indigo-400" />
+        {/* Total Trip Duration */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3.5 shadow-card transition-colors">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span className="text-xs font-medium">Total Trip Time</span>
+            <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <div className="text-xl font-bold font-mono text-white">
+          <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
             {summary.trip_duration_hours.toFixed(1)}{" "}
-            <span className="text-xs font-sans text-slate-400 font-normal">hrs</span>
+            <span className="text-xs font-sans text-slate-500 font-normal">hrs</span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-1">{summary.days} Daily Log Sheets</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            {summary.days} {summary.days === 1 ? "Day" : "Daily Log Sheets"}
+          </p>
         </div>
 
         {/* Stops & Rests */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-medium">Stops &amp; Rests</span>
-            <Fuel className="w-4 h-4 text-amber-400" />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-3.5 shadow-card transition-colors">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+            <span className="text-xs font-medium">Mandatory Stops</span>
+            <Fuel className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono font-semibold mt-1">
-            <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/20" title="Fuel Stops">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono font-medium mt-1">
+            <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-[11px]">
               {summary.fuel_stops} Fuel
             </span>
-            <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" title="10-hour Sleeper Berth Rests">
+            <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 text-[11px]">
               {summary.rests} Rest
             </span>
             {summary.restarts > 0 && (
-              <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20" title="34-hour Restarts">
+              <span className="px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20 text-[11px]">
                 {summary.restarts} Restart
               </span>
             )}
           </div>
-          <p className="text-[10px] text-slate-500 mt-1.5">Scheduled en-route</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Scheduled by HOS rules</p>
         </div>
       </div>
 
       {/* Compliance Alert if violations */}
       {!summary.hos_valid && (
-        <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-3 text-xs text-red-300 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-3.5 text-xs text-red-800 dark:text-red-300 flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-red-200">Hours of Service Non-Compliance Detected</p>
-            <ul className="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-red-300">
+            <p className="font-semibold text-red-900 dark:text-red-200">
+              Hours of Service Warning
+            </p>
+            <ul className="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-red-700 dark:text-red-300">
               {summary.violations.map((v, idx) => (
                 <li key={idx}>{v}</li>
               ))}

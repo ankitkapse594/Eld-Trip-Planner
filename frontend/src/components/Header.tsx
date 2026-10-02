@@ -1,57 +1,84 @@
 import React from "react";
-import { ShieldCheck, Truck, Clock } from "lucide-react";
+import { Truck, CheckCircle2, AlertTriangle, Moon, Sun, Route } from "lucide-react";
+import type { Theme } from "../hooks/useTheme";
 
 interface HeaderProps {
   hosValid?: boolean;
   totalMiles?: number;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ hosValid, totalMiles }) => {
+export const Header: React.FC<HeaderProps> = ({
+  hosValid,
+  totalMiles,
+  theme,
+  onToggleTheme,
+}) => {
   return (
-    <header className="no-print border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-          <Truck className="w-5 h-5 text-slate-950 font-bold" />
-        </div>
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              ELD Trip Planner
-              <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-slate-700">
-                FMCSR § 395
+    <header className="no-print sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Logo & Brand */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center shadow-sm">
+            <Truck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
+                ELD Trip Planner
+              </h1>
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                HOS § 395
               </span>
-            </h1>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+              Route dispatch simulation &amp; driver log sheets
+            </p>
           </div>
-          <p className="text-xs text-slate-400 hidden sm:block">
-            Commercial Property Carrier HOS Route Dispatch &amp; Paper Log Sheet Generator
-          </p>
-          <p className="text-[11px] text-slate-400 sm:hidden">
-            HOS Route Dispatch &amp; Log Generator
-          </p>
         </div>
-      </div>
 
-      <div className="flex items-center gap-3">
-        {totalMiles !== undefined && (
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-xs font-mono">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-slate-300">Total Route:</span>
-            <span className="font-bold text-amber-400">{totalMiles.toLocaleString()} mi</span>
-          </div>
-        )}
+        {/* Right Actions & Status Badges */}
+        <div className="flex items-center gap-2.5">
+          {totalMiles !== undefined && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 font-mono">
+              <Route className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>{totalMiles.toLocaleString()} miles</span>
+            </div>
+          )}
 
-        {hosValid !== undefined && (
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
-              hosValid
-                ? "bg-teal-500/10 text-teal-400 border-teal-500/30"
-                : "bg-red-500/10 text-red-400 border-red-500/30"
-            }`}
+          {hosValid !== undefined && (
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                hosValid
+                  ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
+                  : "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/20"
+              }`}
+            >
+              {hosValid ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <AlertTriangle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+              )}
+              <span>{hosValid ? "HOS Compliant" : "Violation"}</span>
+            </div>
+          )}
+
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 transition focus-ring"
+            title={theme === "dark" ? "Switch to clean light mode" : "Switch to dark mode"}
+            aria-label="Toggle visual theme"
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>{hosValid ? "100% FMCSA Compliant" : "Violations Detected"}</span>
-          </div>
-        )}
+            {theme === "dark" ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -19,14 +19,12 @@ const MapController: React.FC<{
   const map = useMap();
   const prevGeometryRef = useRef<[number, number][] | null>(null);
 
-  // Invalidate size on mount and geometry change to handle grid layout
   useEffect(() => {
     map.invalidateSize();
     const timer = setTimeout(() => map.invalidateSize(), 300);
     return () => clearTimeout(timer);
   }, [map, geometry]);
 
-  // Fit bounds when route geometry changes
   useEffect(() => {
     if (geometry && geometry.length > 0 && geometry !== prevGeometryRef.current) {
       prevGeometryRef.current = geometry;
@@ -35,11 +33,10 @@ const MapController: React.FC<{
     }
   }, [geometry, map]);
 
-  // Fly to stop when selected
   useEffect(() => {
     if (selectedStop) {
       map.flyTo([selectedStop.location.lat, selectedStop.location.lng], 12, {
-        duration: 1.2,
+        duration: 1.0,
       });
     }
   }, [selectedStop, map]);
@@ -47,52 +44,56 @@ const MapController: React.FC<{
   return null;
 };
 
-// Create custom colored markers for each stop type
+// Create clean, minimalist markers for each stop type
 const createStopIcon = (type: string, isSelected: boolean) => {
-  let bgColor = "#F5A524"; // Amber default
-  let borderColor = "#ffffff";
-  let symbol = "📍";
+  let bgColor = "#3B82F6"; // Blue default
+  let symbol = "•";
 
   if (type === "origin") {
-    bgColor = "#3B82F6"; // Blue
-    symbol = "🏁";
+    bgColor = "#2563EB"; // Blue
+    symbol = "A";
   } else if (type === "pickup") {
-    bgColor = "#10B981"; // Emerald
-    symbol = "📦";
+    bgColor = "#059669"; // Emerald
+    symbol = "B";
   } else if (type === "dropoff") {
-    bgColor = "#EF4444"; // Red
-    symbol = "🎯";
+    bgColor = "#E11D48"; // Rose/Red
+    symbol = "C";
   } else if (type === "fuel") {
-    bgColor = "#14B8A6"; // Teal
+    bgColor = "#0D9488"; // Teal
     symbol = "⛽";
   } else if (type === "break") {
     bgColor = "#64748B"; // Slate
     symbol = "☕";
   } else if (type === "rest") {
-    bgColor = "#6366F1"; // Indigo
+    bgColor = "#4F46E5"; // Indigo
     symbol = "🛌";
   } else if (type === "restart") {
-    bgColor = "#8B5CF6"; // Purple
-    symbol = "🔄";
+    bgColor = "#7C3AED"; // Purple
+    symbol = "34h";
   }
 
   const ringStyle = isSelected
-    ? `box-shadow: 0 0 0 4px ${bgColor}88, 0 8px 16px rgba(0,0,0,0.5); transform: scale(1.2);`
-    : "box-shadow: 0 4px 10px rgba(0,0,0,0.4);";
+    ? `box-shadow: 0 0 0 4px ${bgColor}40, 0 4px 12px rgba(0,0,0,0.25); transform: scale(1.15);`
+    : "box-shadow: 0 2px 6px rgba(0,0,0,0.18);";
+
+  const isTextSymbol = symbol === "A" || symbol === "B" || symbol === "C" || symbol === "34h";
 
   const html = `
     <div style="
       background: ${bgColor};
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: ${isTextSymbol ? "11px" : "13px"};
+      font-weight: 700;
+      font-family: system-ui, sans-serif;
       color: white;
-      border: 2px solid ${borderColor};
-      transition: all 0.2s ease-in-out;
+      border: 2px solid #ffffff;
+      transition: all 0.15s ease-in-out;
+      cursor: pointer;
       ${ringStyle}
     ">
       ${symbol}
@@ -102,9 +103,9 @@ const createStopIcon = (type: string, isSelected: boolean) => {
   return L.divIcon({
     html,
     className: "custom-stop-div-icon",
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -18],
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
   });
 };
 
@@ -133,7 +134,6 @@ export const RouteMap: React.FC<RouteMapProps> = ({
           splitIdx = idx;
         }
       });
-      // Ensure overlap at splitIdx for seamless continuous line
       leg1Geometry = route.geometry.slice(0, splitIdx + 1);
       leg2Geometry = route.geometry.slice(splitIdx);
     } else {
@@ -142,78 +142,51 @@ export const RouteMap: React.FC<RouteMapProps> = ({
   }
 
   return (
-    <div className="w-full h-full min-h-[380px] lg:min-h-[500px] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative">
+    <div className="w-full h-full min-h-[380px] lg:min-h-[480px] rounded-2xl overflow-hidden border border-slate-200/90 dark:border-slate-800 shadow-card relative bg-slate-100 dark:bg-slate-900">
       <MapContainer
         center={defaultCenter}
         zoom={4}
         scrollWheelZoom={true}
         className="w-full h-full"
-        style={{ height: "100%", minHeight: "480px", width: "100%" }}
+        style={{ height: "100%", minHeight: "460px", width: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
         />
 
         {route && <MapController geometry={route.geometry} selectedStop={selectedStop} />}
 
-        {/* Two-Color Route Polyline: Leg 1 (Sky Blue) & Leg 2 (Emerald) */}
+        {/* Leg 1 (Origin -> Pickup): Blue route */}
         {leg1Geometry.length > 0 && (
-          <>
-            {/* Leg 1 Glow */}
-            <Polyline
-              positions={leg1Geometry}
-              pathOptions={{
-                color: "#38BDF8", // Sky blue
-                weight: 6,
-                opacity: 0.35,
-                lineCap: "round",
-                lineJoin: "round",
-              }}
-            />
-            {/* Leg 1 Core */}
-            <Polyline
-              positions={leg1Geometry}
-              pathOptions={{
-                color: "#38BDF8",
-                weight: 3.5,
-                opacity: 0.95,
-                lineCap: "round",
-                lineJoin: "round",
-              }}
-            />
-          </>
+          <Polyline
+            positions={leg1Geometry}
+            pathOptions={{
+              color: "#2563EB",
+              weight: 4,
+              opacity: 0.9,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
         )}
 
+        {/* Leg 2 (Pickup -> Dropoff): Emerald loaded freight route */}
         {leg2Geometry.length > 0 && (
-          <>
-            {/* Leg 2 Glow */}
-            <Polyline
-              positions={leg2Geometry}
-              pathOptions={{
-                color: "#10B981", // Emerald green
-                weight: 6,
-                opacity: 0.35,
-                lineCap: "round",
-                lineJoin: "round",
-              }}
-            />
-            {/* Leg 2 Core */}
-            <Polyline
-              positions={leg2Geometry}
-              pathOptions={{
-                color: "#10B981",
-                weight: 3.5,
-                opacity: 0.95,
-                lineCap: "round",
-                lineJoin: "round",
-              }}
-            />
-          </>
+          <Polyline
+            positions={leg2Geometry}
+            pathOptions={{
+              color: "#059669",
+              weight: 4.5,
+              opacity: 0.95,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
         )}
 
-        {/* Markers for each stop and rest point */}
+        {/* Interactive Stop Markers */}
         {stops.map((stop) => {
           const isSelected = stop.id === selectedStopId;
           const icon = createStopIcon(stop.type, isSelected);
@@ -228,22 +201,25 @@ export const RouteMap: React.FC<RouteMapProps> = ({
               }}
             >
               <Popup>
-                <div className="p-1 min-w-[200px]">
-                  <div className="flex items-center gap-1.5 font-bold text-xs text-white mb-1">
+                <div className="p-1 max-w-[220px] text-xs">
+                  <div className="font-semibold text-slate-900 dark:text-white flex items-center justify-between gap-2">
                     <span>{stop.label}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      {stop.duration_minutes > 0 ? `${stop.duration_minutes}m` : "Depart"}
+                    </span>
                   </div>
-                  <p className="text-[11px] text-slate-300 mb-1">{stop.location.label}</p>
-                  <div className="grid grid-cols-2 gap-1 text-[10px] font-mono bg-slate-800/80 p-1.5 rounded border border-slate-700/60 mb-1.5">
-                    <div>
-                      <span className="text-slate-400 block">Arrive:</span>
-                      <span className="text-amber-400 font-semibold">{stop.arrive.slice(11, 16)}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Depart:</span>
-                      <span className="text-teal-400 font-semibold">{stop.depart.slice(11, 16)}</span>
-                    </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                    {stop.location.label}
+                  </p>
+                  <div className="mt-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] font-mono text-slate-500 flex justify-between">
+                    <span>Mile {stop.mile_marker.toFixed(1)}</span>
+                    <span>{stop.arrive.slice(11, 16)} &rarr; {stop.depart.slice(11, 16)}</span>
                   </div>
-                  <p className="text-[10px] text-slate-400 italic">{stop.note}</p>
+                  {stop.note && (
+                    <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300 italic">
+                      {stop.note}
+                    </p>
+                  )}
                 </div>
               </Popup>
             </Marker>
@@ -251,30 +227,22 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         })}
       </MapContainer>
 
-      {/* Map Legend Overlay */}
-      <div className="no-print absolute bottom-4 left-4 z-[400] bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-2 text-[10px] text-slate-300 shadow-xl hidden sm:flex items-center gap-3 flex-wrap">
-        <span className="flex items-center gap-1 font-medium text-sky-400">
-          <span className="w-3 h-1 rounded bg-sky-400 inline-block"></span> Leg 1 (To Pickup)
-        </span>
-        <span className="flex items-center gap-1 font-medium text-emerald-400">
-          <span className="w-3 h-1 rounded bg-emerald-500 inline-block"></span> Leg 2 (Loaded)
-        </span>
-        <span className="text-slate-600">|</span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Origin
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Pickup
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Dropoff
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-teal-500 inline-block"></span> Fuel
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span> 10h Rest
-        </span>
+      {/* Clean Floating Map Legend */}
+      <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-sm text-[11px] flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-1 bg-blue-600 rounded-full inline-block"></span>
+          <span className="text-slate-600 dark:text-slate-300 font-medium">To Pickup</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-1 bg-emerald-600 rounded-full inline-block"></span>
+          <span className="text-slate-600 dark:text-slate-300 font-medium">Loaded</span>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 text-slate-400">
+          <span>&bull;</span>
+          <span className="text-slate-500 dark:text-slate-400">A: Start</span>
+          <span className="text-slate-500 dark:text-slate-400">B: Pickup</span>
+          <span className="text-slate-500 dark:text-slate-400">C: Dropoff</span>
+        </div>
       </div>
     </div>
   );

@@ -32,6 +32,10 @@ dist-ssr/
 .npm
 .eslintcache
 
+# Scratch / local scripts
+capture_screenshots.py
+test_and_screenshot.py
+
 # IDE / OS
 .DS_Store
 Thumbs.db
